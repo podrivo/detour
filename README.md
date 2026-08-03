@@ -1,8 +1,14 @@
-# Detour
+<p align="center">
+  <img src="icons/icon128.png" alt="Detour" width="96" height="96" />
+</p>
+
+<h1 align="center">Detour</h1>
 
 A Chrome extension that catches the sites you open out of habit — X/Twitter, Instagram,
 Reddit, TikTok — and sends you somewhere worth looking at instead: Cosmos, Savee, Are.na,
 SiteInspire, Fonts In Use, Public Work and friends.
+
+![The interstitial: "Not today, x.com" with x.com struck out, and a card naming Land-book as the destination](screenshots/redirect.png)
 
 ## Install (unpacked)
 
@@ -41,10 +47,27 @@ and bounces you to a creative destination.
   "Sometimes" sites are never swept: the point is to interrupt the reflex of opening the
   site, not the article you're halfway through.
 
+<table>
+  <tr>
+    <td width="35%" valign="top">
+      <img src="screenshots/popup.png" alt="The toolbar popup: a master switch, the guarded sites with per-site toggles, and Pause 15 min" />
+    </td>
+    <td valign="top">
+      <img src="screenshots/options.png" alt="Settings: the sites-to-redirect list with each site's toggle, and the field for adding a new one" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><em>The toolbar popup</em></td>
+    <td align="center"><em>Settings — sites to redirect</em></td>
+  </tr>
+</table>
+
 ## Sites you visit too often, not too much
 
 Some sites don't deserve a ban — you just reach for the same one every time. Set a site to
 **Sometimes** (click it in settings to open its dials) and every visit is a roll of the dice:
+
+![The dials under g1.globo.com: guard set to "Sometimes redirect", redirect 60% of the time, free pass after 3 hours, a visit stays open 20 minutes, sent to the news pool](screenshots/sometimes.png)
 
 - **Redirect me** — how often a visit gets bounced. `60%` for g1.globo.com, so four visits in
   ten go through untouched.
@@ -75,6 +98,7 @@ pages/redirect.html    the interstitial you land on (+ .css / .js)
 pages/popup.html       toolbar popup: master switch, per-site toggles, pause
 pages/options.html     full settings: lists, behaviour, tally
 icons/                 generated PNG icons
+screenshots/           the images in this README
 ```
 
 Redirects are done with **declarativeNetRequest** dynamic rules rather than by watching
