@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detour — settings</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .wrap {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 44px 24px 96px;
+        display: grid;
+        gap: 34px;
+      }
+
+      header {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+      }
+
+      header h1 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 34px;
+        letter-spacing: -0.02em;
+        margin: 4px 0 2px;
+      }
+
+      header p {
+        margin: 0;
+        color: var(--ink-soft);
+        max-width: 46ch;
+      }
+
+      header .switch {
+        margin-top: 12px;
+      }
+
+      section h2 {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        font-weight: 500;
+        margin: 0 0 10px 2px;
+      }
+
+      section > p.hint {
+        margin: 10px 2px 0;
+        font-size: 12px;
+        color: var(--ink-soft);
+      }
+
+      .fields {
+        display: grid;
+        gap: 0;
+      }
+
+      .fields .row {
+        justify-content: space-between;
+      }
+
+      .fields label.name {
+        display: grid;
+        gap: 1px;
+      }
+
+      .fields label.name small {
+        color: var(--ink-soft);
+      }
+
+      .add {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 12px;
+        border-top: 1px solid var(--line);
+        background: transparent;
+      }
+
+      .add input {
+        flex: 1;
+      }
+
+      .add input.short {
+        flex: 0 1 150px;
+      }
+
+      .error {
+        padding: 0 12px 10px;
+        font-size: 12px;
+        color: var(--accent);
+      }
+
+      .error:empty {
+        display: none;
+      }
+
+      .pill {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        white-space: nowrap;
+      }
+
+      .pill.soft {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink-soft);
+      }
+
+      /* Per-site settings: a row that opens into its own little panel. ------ */
+
+      .entry > .row {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .entry:last-child > .row:last-child,
+      .entry:last-child .detail .row:last-child {
+        border-bottom: 0;
+      }
+
+      button.link {
+        background: transparent;
+        border-color: transparent;
+        padding: 0;
+        text-align: left;
+        color: inherit;
+      }
+
+      button.link:hover {
+        color: var(--accent);
+      }
+
+      .disclosure::before {
+        content: '▸';
+        display: inline-block;
+        width: 1.1em;
+        color: var(--ink-soft);
+        transition: transform 0.12s ease;
+      }
+
+      .disclosure.open::before {
+        transform: rotate(90deg);
+      }
+
+      .detail {
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+      }
+
+      /* The add form draws its own top border — don't double up against it. */
+      .entry:last-child > .detail {
+        border-bottom: 0;
+      }
+
+      .detail .row {
+        padding-left: 34px;
+      }
+
+      .detail .row:last-child {
+        border-bottom: 0;
+      }
+
+      .detail .name {
+        display: grid;
+        gap: 1px;
+      }
+
+      .detail .name small {
+        color: var(--ink-soft);
+      }
+
+      /* Destination pools: one card each, so the lists read as separate
+         places rather than one list wearing labels. ------------------------ */
+
+      .pools {
+        display: grid;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .pool-head {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        padding: 11px 13px;
+        border-bottom: 1px solid var(--line);
+        background: var(--paper);
+      }
+
+      .pool-name {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .pool-meta {
+        font-size: 12px;
+        color: var(--ink-soft);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .stats {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+        padding: 16px 18px;
+      }
+
+      .stat b {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 30px;
+        display: block;
+        line-height: 1.1;
+      }
+
+      .footer-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="grow">
+          <p class="eyebrow">Detour</p>
+          <h1>Go somewhere better</h1>
+          <p>
+            When you reach for a time sink out of habit, Detour hands you a corner of the web
+            worth looking at instead.
+          </p>
+        </div>
+        <label class="switch" title="Enable Detour">
+          <input type="checkbox" id="master" />
+          <span class="track"></span>
+        </label>
+      </header>
+
+      <section>
+        <h2>Sites to redirect</h2>
+        <div class="card">
+          <div class="fields" id="blockedList"></div>
+          <form class="add" id="addBlocked">
+            <input type="text" id="blockedInput" placeholder="e.g. news.ycombinator.com" />
+            <select id="blockedGuard" title="How hard to guard this site">
+              <option value="always">Always</option>
+              <option value="sometimes">Sometimes</option>
+            </select>
+            <button class="primary" type="submit">Add site</button>
+          </form>
+          <p class="error" id="blockedError"></p>
+        </div>
+        <p class="hint" id="ruleStatus"></p>
+        <p class="hint">
+          Subdomains are included automatically — blocking x.com also covers pro.x.com. Click a
+          site to set how often it's redirected and where it sends you.
+        </p>
+      </section>
+
+      <section>
+        <h2>Places to land</h2>
+        <div class="pools" id="destList"></div>
+        <div class="card">
+          <form class="add" id="addDest">
+            <input class="short" type="text" id="destName" placeholder="Name" />
+            <input type="url" id="destUrl" placeholder="https://…" />
+            <input class="short" type="text" id="destGroup" list="groupOptions" placeholder="Pool" />
+            <datalist id="groupOptions"></datalist>
+            <button class="primary" type="submit">Add</button>
+          </form>
+          <p class="error" id="destError"></p>
+        </div>
+        <p class="hint">
+          Pools keep the lists apart — a news habit lands on other newsrooms, not on Are.na.
+          Type a name that doesn't exist yet to start a new pool.
+        </p>
+      </section>
+
+      <section>
+        <h2>Behaviour</h2>
+        <div class="card fields">
+          <div class="row">
+            <label class="name grow" for="mode">
+              Arrival
+              <small>Show a card before bouncing, or jump straight there.</small>
+            </label>
+            <select id="mode">
+              <option value="interstitial">Show a card</option>
+              <option value="instant">Jump instantly</option>
+            </select>
+          </div>
+          <div class="row" id="delayRow">
+            <label class="name grow" for="delay">
+              Card duration
+              <small>Press Esc on the card to stay put.</small>
+            </label>
+            <select id="delay">
+              <option value="800">0.8s</option>
+              <option value="1400">1.4s</option>
+              <option value="2500">2.5s</option>
+              <option value="4000">4s</option>
+              <option value="0">Wait for me</option>
+            </select>
+          </div>
+          <div class="row">
+            <label class="name grow" for="pickMode">
+              Choosing a destination
+              <small>Shuffle every time, or take turns down the list.</small>
+            </label>
+            <select id="pickMode">
+              <option value="random">Random</option>
+              <option value="rotate">In order</option>
+            </select>
+          </div>
+          <div class="row">
+            <label class="name grow" for="passMinutes">
+              “Let me through” lasts
+              <small>How long a site stays open after you insist.</small>
+            </label>
+            <select id="passMinutes">
+              <option value="1">1 min</option>
+              <option value="5">5 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="60">1 hour</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Tally</h2>
+        <div class="card stats" id="stats"></div>
+      </section>
+
+      <div class="footer-actions">
+        <button class="danger" id="resetStats">Reset tally</button>
+        <button class="danger" id="resetAll">Restore default settings</button>
+        <span class="muted" id="saved" style="align-self: center; font-size: 12px"></span>
+      </div>
+    </div>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

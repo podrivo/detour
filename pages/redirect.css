@@ -1,0 +1,147 @@
+/* Held back until the page knows it is staying: a "sometimes" site may win its
+   coin flip and bounce straight on, and a flash of "not today" on the way to a
+   site you were allowed to visit is worse than a beat of empty paper. */
+.stage {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 48px 28px 64px;
+}
+
+.headline {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(34px, 7vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.struck {
+  position: relative;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.ready .stage {
+  opacity: 1;
+}
+
+.struck::after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 55%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* Starts with the reveal, not with the page load — otherwise the line would
+   already be drawn by the time a slow decision lets the card through. */
+.ready .struck::after {
+  animation: strike 0.45s 0.1s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes strike {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.dest {
+  display: grid;
+  gap: 2px;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-2);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.dest:hover {
+  border-color: var(--ink-soft);
+  transform: translateY(-1px);
+}
+
+.dest-name {
+  font-family: var(--serif);
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.dest-host {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.bar {
+  display: block;
+  height: 2px;
+  margin-top: 14px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+}
+
+.bar-fill.running {
+  transition: width linear;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.footnote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* Nothing to send you to: keep the card, drop the timer and the shuffle. */
+.empty .bar,
+.empty #shuffle {
+  display: none;
+}
+
+.empty .dest {
+  border-style: dashed;
+}
+
+.empty .dest:hover {
+  transform: none;
+  border-color: var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ready .struck::after {
+    animation: none;
+    transform: scaleX(1);
+  }
+  .stage,
+  .dest {
+    transition: none;
+  }
+}

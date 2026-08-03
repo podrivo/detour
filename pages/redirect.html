@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detour</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="redirect.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <p class="eyebrow" id="eyebrow">Detour</p>
+
+      <h1 class="headline">
+        <span id="lead">Not today,</span>
+        <span class="struck" id="from">that site</span>
+      </h1>
+
+      <a class="dest" id="dest" href="#">
+        <span class="dest-label eyebrow">Going to</span>
+        <span class="dest-name" id="destName">…</span>
+        <span class="dest-host mono" id="destHost"></span>
+        <span class="bar"><span class="bar-fill" id="bar"></span></span>
+      </a>
+
+      <div class="actions">
+        <button class="primary" id="go">Go now</button>
+        <button id="shuffle">Somewhere else</button>
+        <button class="ghost" id="through">Let me through anyway</button>
+      </div>
+
+      <p class="footnote muted" id="footnote">
+        <span id="count"></span>
+        <button class="ghost" id="settings">Settings</button>
+      </p>
+    </main>
+    <script type="module" src="redirect.js"></script>
+  </body>
+</html>
