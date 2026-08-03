@@ -4,9 +4,8 @@
 
 <h1 align="center">Detour</h1>
 
-A Chrome extension that catches the sites you open out of habit — X/Twitter, Instagram,
-Reddit, TikTok — and sends you somewhere worth looking at instead: Cosmos, Savee, Are.na,
-SiteInspire, Fonts In Use, Public Work and friends.
+A Chrome extension that catches the sites you open out of habit (X/Twitter, Instagram,
+Reddit, TikTok) and sends you somewhere worth looking at instead.
 
 ![The interstitial: "Not today, x.com" with x.com struck out, and a card naming Land-book as the destination](screenshots/redirect.png)
 
