@@ -30,9 +30,10 @@ el.through.textContent = from ? `Let me through to ${from}` : 'Let me through an
 el.through.hidden = !from;
 
 /**
- * Where you were actually headed. "Sometimes" rules park the full original URL
- * in our fragment so a won coin flip lands on the article you clicked, not on
- * the site's front page. Verified against `from` before we ever navigate to it.
+ * Where you were actually headed. Redirect rules park the full original URL in
+ * our fragment so "Let me through" (and a won sometimes-roll) lands on the
+ * page you clicked, not the site's front page. Verified against `from` before
+ * we ever navigate to it.
  */
 function intendedUrl() {
   const raw = location.hash.slice(1);

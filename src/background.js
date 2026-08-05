@@ -84,27 +84,22 @@ async function applyRules({ sweep = false } = {}) {
         },
       });
 
-      if (entry.guard === GUARD_SOMETIMES) {
-        // The coin is flipped on the redirect page, and a lost flip sends you
-        // straight back — so the original URL has to survive the trip. A regex
-        // rule can carry it: group 1 is the whole URL, parked in the fragment
-        // where its own `?a=b&c=d` can't be confused with our query string.
-        rules.push({
-          id,
-          priority: 1,
-          action: {
-            type: 'redirect',
-            redirect: { regexSubstitution: `${redirectUrl}?from=${from}#\\1` },
-          },
-          condition: {
-            regexFilter: regexFilterFor(entry.domain),
-            resourceTypes: ['main_frame'],
-          },
-        });
-      } else {
-        rules.push(plain[plain.length - 1]);
-        sweepDomains.push(entry.domain);
-      }
+      // Park the whole original URL in the fragment so "Let me through" (and a
+      // won sometimes-roll) can land on the page you clicked, not the homepage.
+      // Group 1 is the URL; the fragment keeps its own `?a=b&c=d` out of ours.
+      rules.push({
+        id,
+        priority: 1,
+        action: {
+          type: 'redirect',
+          redirect: { regexSubstitution: `${redirectUrl}?from=${from}#\\1` },
+        },
+        condition: {
+          regexFilter: regexFilterFor(entry.domain),
+          resourceTypes: ['main_frame'],
+        },
+      });
+      if (entry.guard !== GUARD_SOMETIMES) sweepDomains.push(entry.domain);
     }
   }
 
@@ -156,9 +151,11 @@ async function sweepOpenTabs(domains) {
     }
     for (const tab of tabs) {
       if (tab.id === undefined) continue;
+      const from = encodeURIComponent(domain);
+      const hash = tab.url ? `#${tab.url}` : '';
       chrome.tabs
         .update(tab.id, {
-          url: chrome.runtime.getURL(`${REDIRECT_PAGE}?from=${encodeURIComponent(domain)}`),
+          url: chrome.runtime.getURL(`${REDIRECT_PAGE}?from=${from}${hash}`),
         })
         .catch(() => {});
     }
