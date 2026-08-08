@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Detour — go somewhere better",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Sends sites like X/Twitter to creative corners of the web — Cosmos, Savee, Are.na and friends.",
   "permissions": ["declarativeNetRequest", "storage", "alarms"],
   "host_permissions": [
