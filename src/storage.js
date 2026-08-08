@@ -81,6 +81,19 @@ export function todayKey(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+/** Saturday or Sunday in the user's local timezone. */
+export function isWeekend(d = new Date()) {
+  const day = d.getDay();
+  return day === 0 || day === 6;
+}
+
+/** Epoch ms of the next local midnight after `from`. */
+export function nextLocalMidnight(from = new Date()) {
+  const d = new Date(from);
+  d.setHours(24, 0, 0, 0);
+  return d.getTime();
+}
+
 /** "https://www.cosmos.so/x" -> "cosmos.so" (leading www. dropped). */
 export function hostOf(url) {
   try {

@@ -11,12 +11,15 @@ import {
   setState,
   prunePasses,
   todayKey,
+  isWeekend,
+  nextLocalMidnight,
   originPatternFor,
   regexFilterFor,
   clamp01,
 } from './storage.js';
 
 const TICK_ALARM = 'detour-tick';
+const WEEKEND_ALARM = 'detour-weekend';
 const REDIRECT_PAGE = '/pages/redirect.html';
 
 // ---------------------------------------------------------------- rule engine
@@ -46,7 +49,8 @@ async function applyRules({ sweep = false } = {}) {
   if (changed) await setState({ passes });
 
   const paused = state.pausedUntil > now;
-  const active = settings.enabled && !paused;
+  const weekendOff = settings.offOnWeekends && isWeekend();
+  const active = settings.enabled && !paused && !weekendOff;
 
   // Only domains we actually hold host permission for can be redirected;
   // a rule without permission silently never fires, so skip it and let the
@@ -122,8 +126,15 @@ async function applyRules({ sweep = false } = {}) {
   }
   await noteRuleHealth(state, { error, count: rules.length });
 
-  await updateBadge({ active, paused, enabled: settings.enabled, count: rules.length });
+  await updateBadge({
+    active,
+    paused,
+    weekendOff,
+    enabled: settings.enabled,
+    count: rules.length,
+  });
   await scheduleTick({ passes, pausedUntil: state.pausedUntil });
+  await scheduleWeekendAlarm(settings.offOnWeekends);
 
   // Rules only catch new navigations, so a tab that was already sitting on a
   // guarded site would survive untouched. Sweep those when a guard is switched
@@ -162,11 +173,14 @@ async function sweepOpenTabs(domains) {
   }
 }
 
-async function updateBadge({ active, paused, enabled, count }) {
+async function updateBadge({ active, paused, weekendOff, enabled, count }) {
   let text = '';
   let color = '#1f6feb';
   if (!enabled) {
     text = 'off';
+    color = '#6b7280';
+  } else if (weekendOff) {
+    text = 'wk';
     color = '#6b7280';
   } else if (paused) {
     text = 'zZ';
@@ -189,6 +203,15 @@ async function scheduleTick({ passes, pausedUntil }) {
   } else {
     await chrome.alarms.clear(TICK_ALARM);
   }
+}
+
+/** Fires at the next local midnight so Sat/Sun off turns on and off without a wake. */
+async function scheduleWeekendAlarm(offOnWeekends) {
+  if (!offOnWeekends) {
+    await chrome.alarms.clear(WEEKEND_ALARM);
+    return;
+  }
+  chrome.alarms.create(WEEKEND_ALARM, { when: nextLocalMidnight() });
 }
 
 // ------------------------------------------------------------- sometimes mode
@@ -321,7 +344,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 chrome.runtime.onStartup.addListener(rebuildRules);
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  const watched = area === 'sync' ? ['enabled', 'blocked'] : ['passes', 'pausedUntil'];
+  const watched =
+    area === 'sync' ? ['enabled', 'blocked', 'offOnWeekends'] : ['passes', 'pausedUntil'];
   if (watched.some((key) => key in changes)) {
     // A settings edit is a deliberate act; a pass expiring is not.
     rebuildRules({ sweep: area === 'sync' });
@@ -332,7 +356,7 @@ chrome.permissions.onAdded.addListener(() => rebuildRules({ sweep: true }));
 chrome.permissions.onRemoved.addListener(() => rebuildRules());
 
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === TICK_ALARM) rebuildRules();
+  if (alarm.name === TICK_ALARM || alarm.name === WEEKEND_ALARM) rebuildRules();
 });
 
 // -------------------------------------------------------------------- messages

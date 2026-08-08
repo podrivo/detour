@@ -15,6 +15,7 @@ import {
   normalizeDomain,
   originPatternFor,
   todayKey,
+  isWeekend,
 } from '../src/storage.js';
 
 const $ = (id) => document.getElementById(id);
@@ -31,6 +32,7 @@ const el = {
   delayRow: $('delayRow'),
   pickMode: $('pickMode'),
   passMinutes: $('passMinutes'),
+  offOnWeekends: $('offOnWeekends'),
   stats: $('stats'),
   saved: $('saved'),
   ruleStatus: $('ruleStatus'),
@@ -509,6 +511,10 @@ async function renderRuleStatus() {
     el.ruleStatus.textContent = 'Detour is switched off — nothing is being redirected.';
     return;
   }
+  if (settings.offOnWeekends && isWeekend()) {
+    el.ruleStatus.textContent = 'Off for the weekend — nothing is being redirected.';
+    return;
+  }
   if (pausedUntil > Date.now()) {
     el.ruleStatus.textContent = 'Paused — nothing is being redirected right now.';
     return;
@@ -560,6 +566,7 @@ async function render() {
   el.delay.value = String(settings.interstitialMs);
   el.pickMode.value = settings.pickMode;
   el.passMinutes.value = String(settings.passMinutes);
+  el.offOnWeekends.checked = settings.offOnWeekends;
   el.delayRow.style.display = settings.mode === 'interstitial' ? '' : 'none';
 
   renderDestinations();
@@ -572,6 +579,9 @@ el.delay.addEventListener('change', () => save({ interstitialMs: Number(el.delay
 el.pickMode.addEventListener('change', () => save({ pickMode: el.pickMode.value, rotateIndex: 0 }));
 el.passMinutes.addEventListener('change', () =>
   save({ passMinutes: Number(el.passMinutes.value) }),
+);
+el.offOnWeekends.addEventListener('change', () =>
+  save({ offOnWeekends: el.offOnWeekends.checked }),
 );
 
 $('resetStats').addEventListener('click', async () => {

@@ -118,6 +118,8 @@ export const SHIPPED_IN_1_0 = {
 
 export const DEFAULT_SETTINGS = {
   enabled: true,
+  // When on, Detour stays out of the way on Saturdays and Sundays.
+  offOnWeekends: true,
   // 'interstitial' shows a short card before bouncing; 'instant' jumps straight there.
   mode: 'interstitial',
   interstitialMs: 1400,

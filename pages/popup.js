@@ -1,5 +1,5 @@
 import { GUARD_SOMETIMES } from '../src/defaults.js';
-import { getSettings, setSettings, getState, todayKey } from '../src/storage.js';
+import { getSettings, setSettings, getState, todayKey, isWeekend } from '../src/storage.js';
 
 const el = {
   master: document.getElementById('master'),
@@ -25,6 +25,8 @@ async function render() {
   const today = state.stats.days?.[todayKey()] || 0;
   if (!settings.enabled) {
     el.status.innerHTML = '<b>Off.</b> Nothing is being redirected.';
+  } else if (settings.offOnWeekends && isWeekend()) {
+    el.status.innerHTML = '<b>Weekend.</b> Detour is off until Monday.';
   } else if (paused) {
     el.status.innerHTML = `<b>Paused</b> for ${minutesLeft(state.pausedUntil)} more min.`;
   } else {
