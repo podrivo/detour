@@ -4,8 +4,7 @@
 
 <h1 align="center">Detour</h1>
 
-A Chrome extension that catches the sites you open out of habit (X/Twitter, Instagram,
-Reddit, TikTok) and sends you somewhere worth looking at instead.
+Detour catches the sites you open on autopilot and sends you to the creative web instead.
 
 ![The interstitial: "Not today, x.com" with x.com struck out, and a card naming Land-book as the destination](screenshots/redirect.png)
 
