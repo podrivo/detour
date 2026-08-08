@@ -6,6 +6,8 @@
 
 Detour catches the sites you open on autopilot and sends you to the creative web instead.
 
+[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/detour-%E2%80%94-go-somewhere-bet/klgdebmhbdcdfecmmambpolaemomocgo)
+
 ![The interstitial: "Not today, x.com" with x.com struck out, and a card naming Land-book as the destination](screenshots/redirect.png)
 
 ## Install (unpacked)
