@@ -1,4 +1,10 @@
-import { DEFAULT_SETTINGS, BLOCKED_DEFAULTS, DESTINATION_DEFAULTS } from './defaults.js';
+import {
+  DEFAULT_SETTINGS,
+  BLOCKED_DEFAULTS,
+  DESTINATION_DEFAULTS,
+  CATCH_ANYWHERE,
+  CATCH_OMNIBOX,
+} from './defaults.js';
 
 // Settings live in `sync` so they follow the profile. Ephemeral state (passes,
 // global pause, visit timestamps, counters) lives in `local` — it is device-
@@ -17,6 +23,7 @@ export async function getSettings() {
 export function normalizeSettings(settings) {
   return {
     ...settings,
+    catchFrom: settings.catchFrom === CATCH_ANYWHERE ? CATCH_ANYWHERE : CATCH_OMNIBOX,
     blocked: (Array.isArray(settings.blocked) ? settings.blocked : []).map((entry) => ({
       ...BLOCKED_DEFAULTS,
       ...entry,

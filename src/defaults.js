@@ -8,6 +8,12 @@
 export const GUARD_ALWAYS = 'always';
 export const GUARD_SOMETIMES = 'sometimes';
 
+// Where a visit has to start for Detour to step in.
+//   omnibox  — typing (or picking) the site in the address bar
+//   anywhere — every navigation, including clicked links
+export const CATCH_OMNIBOX = 'omnibox';
+export const CATCH_ANYWHERE = 'anywhere';
+
 /**
  * Per-entry defaults. `normalizeSettings()` folds these into every stored entry
  * on read, so lists saved before "sometimes" existed keep behaving exactly as
@@ -118,6 +124,8 @@ export const SHIPPED_IN_1_0 = {
 
 export const DEFAULT_SETTINGS = {
   enabled: true,
+  // Catch the reflex of typing the site; clicked links go through.
+  catchFrom: CATCH_OMNIBOX,
   // When on, Detour stays out of the way on Saturdays and Sundays.
   offOnWeekends: true,
   // 'interstitial' shows a short card before bouncing; 'instant' jumps straight there.

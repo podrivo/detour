@@ -1,6 +1,6 @@
-/* Held back until the page knows it is staying: a "sometimes" site may win its
-   coin flip and bounce straight on, and a flash of "not today" on the way to a
-   site you were allowed to visit is worse than a beat of empty paper. */
+/* Held back until the page knows it is staying: a won "sometimes" roll or a
+   clicked link (when only the address bar is caught) should never flash this
+   card on the way through. */
 .stage {
   opacity: 0;
   transition: opacity 0.12s ease;

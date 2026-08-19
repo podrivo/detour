@@ -4,6 +4,7 @@ import {
   DEFAULT_DESTINATIONS,
   SHIPPED_IN_1_0,
   GUARD_SOMETIMES,
+  CATCH_ANYWHERE,
 } from './defaults.js';
 import {
   getSettings,
@@ -16,6 +17,8 @@ import {
   originPatternFor,
   regexFilterFor,
   clamp01,
+  hostOf,
+  matchesDomain,
 } from './storage.js';
 
 const TICK_ALARM = 'detour-tick';
@@ -142,7 +145,9 @@ async function applyRules({ sweep = false } = {}) {
   // under someone mid-sentence when a pass quietly expires. "Sometimes" sites
   // are left alone too: the point there is to interrupt the reflex of opening
   // the site, not the article you are already halfway through.
-  if (sweep && active) await sweepOpenTabs(sweepDomains);
+  // Address-bar-only shouldn't yank a tab you already had open — that visit
+  // wasn't the reflex of typing the site.
+  if (sweep && active && settings.catchFrom === CATCH_ANYWHERE) await sweepOpenTabs(sweepDomains);
 }
 
 /** Records how the last rebuild went, but only when it differs — this runs on
@@ -256,6 +261,178 @@ async function decideVisit(domain) {
   return { allow: true, reason: rested ? 'rested' : 'chance', until };
 }
 
+// ---------------------------------------------------------- address-bar only
+//
+// declarativeNetRequest cannot see *how* a navigation started, so every visit
+// still lands here. webNavigation.onCommitted then tells us whether it was the
+// omnibox; clicked links (and Back/Forward) get a tab-scoped allow and go
+// through. Session rules and chrome.storage.session survive a worker restart;
+// the in-memory maps only cover the same-tick race with the redirect page.
+
+const lastTransition = new Map(); // tabId -> { type, qualifiers, url }
+const transitionWaiters = new Map(); // tabId -> Array<(info) => void>
+
+function navKey(tabId) {
+  return `nav:${tabId}`;
+}
+
+function fromOmnibox(info) {
+  if (!info) return false;
+  const qualifiers = info.qualifiers || [];
+  if (qualifiers.includes('forward_back')) return false;
+  if (qualifiers.includes('from_address_bar')) return true;
+  return (
+    info.type === 'typed' ||
+    info.type === 'generated' ||
+    info.type === 'keyword' ||
+    info.type === 'keyword_generated'
+  );
+}
+
+function infoMatchesVisit(info, domain) {
+  if (!info?.url) return false;
+  const redirectBase = chrome.runtime.getURL(REDIRECT_PAGE);
+  if (info.url.startsWith(redirectBase)) {
+    try {
+      const from = new URL(info.url).searchParams.get('from');
+      return !domain || from === domain;
+    } catch {
+      return true;
+    }
+  }
+  return domain ? matchesDomain(hostOf(info.url), domain) : false;
+}
+
+function rememberTransition(details) {
+  if (details.frameId !== 0) return;
+  if (!details.transitionType) return;
+  const info = {
+    type: details.transitionType,
+    qualifiers: details.transitionQualifiers || [],
+    url: details.url,
+  };
+  lastTransition.set(details.tabId, info);
+  chrome.storage.session.set({ [navKey(details.tabId)]: info }).catch(() => {});
+
+  const waiters = transitionWaiters.get(details.tabId);
+  if (!waiters?.length) return;
+  const still = [];
+  for (const resolve of waiters) {
+    if (!resolve(info)) still.push(resolve);
+  }
+  if (still.length) transitionWaiters.set(details.tabId, still);
+  else transitionWaiters.delete(details.tabId);
+}
+
+async function readTransition(tabId) {
+  const live = lastTransition.get(tabId);
+  if (live) return live;
+  const stored = await chrome.storage.session.get(navKey(tabId));
+  return stored[navKey(tabId)] || null;
+}
+
+function waitForTransition(tabId, domain, ms = 400) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (info) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      const list = transitionWaiters.get(tabId);
+      if (list) {
+        const next = list.filter((fn) => fn !== onInfo);
+        if (next.length) transitionWaiters.set(tabId, next);
+        else transitionWaiters.delete(tabId);
+      }
+      resolve(info);
+    };
+
+    const onInfo = (info) => {
+      if (!infoMatchesVisit(info, domain)) return false;
+      done(info);
+      return true;
+    };
+
+    const timer = setTimeout(async () => {
+      const stored = await readTransition(tabId);
+      done(infoMatchesVisit(stored, domain) ? stored : null);
+    }, ms);
+
+    const list = transitionWaiters.get(tabId) || [];
+    list.push(onInfo);
+    transitionWaiters.set(tabId, list);
+
+    readTransition(tabId).then((info) => {
+      if (infoMatchesVisit(info, domain)) done(info);
+    });
+  });
+}
+
+async function allowTab(tabId, domain) {
+  await chrome.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: [tabId],
+    addRules: [
+      {
+        id: tabId,
+        priority: 2,
+        action: { type: 'allow' },
+        condition: {
+          tabIds: [tabId],
+          requestDomains: [domain],
+          resourceTypes: ['main_frame'],
+        },
+      },
+    ],
+  });
+}
+
+async function releaseTabIfLeft(details) {
+  if (details.frameId !== 0) return;
+  if (details.url.startsWith(chrome.runtime.getURL(REDIRECT_PAGE))) return;
+  const rules = await chrome.declarativeNetRequest.getSessionRules();
+  const rule = rules.find((r) => r.id === details.tabId);
+  if (!rule) return;
+  const domain = rule.condition?.requestDomains?.[0];
+  if (domain && matchesDomain(hostOf(details.url), domain)) return;
+  await chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [details.tabId] });
+}
+
+async function decideCatch(domain, tabId) {
+  const settings = await getSettings();
+  if (settings.catchFrom === CATCH_ANYWHERE) return { catch: true };
+  if (!tabId || !domain) return { catch: true };
+
+  const info = await waitForTransition(tabId, domain);
+  // Unknown: fail closed so a missing navigation event doesn't disable Detour.
+  if (!info || fromOmnibox(info)) return { catch: true };
+
+  try {
+    await allowTab(tabId, domain);
+  } catch {
+    const state = await getState();
+    await setState({
+      passes: { ...state.passes, [domain]: Date.now() + 60_000 },
+    });
+    await rebuildRules();
+  }
+
+  const state = await getState();
+  await setState({ visits: { ...state.visits, [domain]: Date.now() } });
+  return { catch: false };
+}
+
+chrome.webNavigation.onCommitted.addListener((details) => {
+  rememberTransition(details);
+  releaseTabIfLeft(details);
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  lastTransition.delete(tabId);
+  transitionWaiters.delete(tabId);
+  chrome.storage.session.remove(navKey(tabId)).catch(() => {});
+  chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [tabId] }).catch(() => {});
+});
+
 // ------------------------------------------------------------------- counters
 
 async function recordRedirect(domain) {
@@ -364,6 +541,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   (async () => {
     switch (message?.type) {
+      case 'decideCatch': {
+        sendResponse(await decideCatch(message.domain, _sender.tab?.id));
+        break;
+      }
       case 'decideVisit': {
         sendResponse(await decideVisit(message.domain));
         break;

@@ -27,6 +27,7 @@ const el = {
   destList: $('destList'),
   destError: $('destError'),
   groupOptions: $('groupOptions'),
+  catchFrom: $('catchFrom'),
   mode: $('mode'),
   delay: $('delay'),
   delayRow: $('delayRow'),
@@ -562,6 +563,7 @@ async function render() {
   settings = await getSettings();
 
   el.master.checked = settings.enabled;
+  el.catchFrom.value = settings.catchFrom;
   el.mode.value = settings.mode;
   el.delay.value = String(settings.interstitialMs);
   el.pickMode.value = settings.pickMode;
@@ -574,6 +576,7 @@ async function render() {
 }
 
 el.master.addEventListener('change', () => save({ enabled: el.master.checked }));
+el.catchFrom.addEventListener('change', () => save({ catchFrom: el.catchFrom.value }));
 el.mode.addEventListener('change', () => save({ mode: el.mode.value }));
 el.delay.addEventListener('change', () => save({ interstitialMs: Number(el.delay.value) }));
 el.pickMode.addEventListener('change', () => save({ pickMode: el.pickMode.value, rotateIndex: 0 }));

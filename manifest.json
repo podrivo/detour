@@ -3,7 +3,7 @@
   "name": "Detour — go somewhere better",
   "version": "1.2.0",
   "description": "Detour catches the sites you open on autopilot and sends you to the creative web instead.",
-  "permissions": ["declarativeNetRequest", "storage", "alarms"],
+  "permissions": ["declarativeNetRequest", "storage", "alarms", "webNavigation"],
   "host_permissions": [
     "*://*.x.com/*",
     "*://*.twitter.com/*",

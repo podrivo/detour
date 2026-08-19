@@ -121,6 +121,20 @@ function showEmptyState() {
 }
 
 async function main() {
+  // Address-bar-only: a clicked link (or Back/Forward) is not the reflex we're
+  // after. The worker lifts the rule for this tab before answering, so we can
+  // continue to the original URL without bouncing straight back here.
+  const intercept = await chrome.runtime
+    .sendMessage({ type: 'decideCatch', domain: from })
+    .catch(() => null);
+  if (intercept?.catch === false) {
+    const url = intendedUrl();
+    if (url) {
+      location.replace(url);
+      return;
+    }
+  }
+
   settings = await getSettings();
   entry = settings.blocked.find((b) => b.domain === from) || null;
 
