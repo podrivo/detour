@@ -25,6 +25,9 @@ and bounces you to a creative destination.
 - **Redirect list** — x.com, twitter.com, instagram.com, facebook.com, reddit.com and
   tiktok.com are on by default. linkedin.com, youtube.com and news.ycombinator.com ship
   switched off. Subdomains are always included.
+- **When to catch** — by default only the address bar: typing the site (or `ins` and Enter)
+  is the reflex Detour interrupts. A link from Slack, an email, or another page goes
+  through. Switch to *Every visit* in settings to catch clicked links too.
 - **Always or sometimes** — every site is guarded one of two ways. *Always* is the hard
   block above. *Sometimes* rations a site you don't want gone, just visited less: g1.globo.com
   ships this way and is redirected 60% of the time. See below.
@@ -42,10 +45,10 @@ and bounces you to a creative destination.
   up to an hour), then the guard comes back.
 - **Pause** — the popup pauses everything for 15 minutes; the toolbar badge shows `zZ`
   while it's paused and `off` when the extension is switched off.
-- **Already-open tabs** — turning a guard on also redirects tabs already sitting on that
-  site. A pass quietly expiring does not, so you never lose what you were typing.
-  "Sometimes" sites are never swept: the point is to interrupt the reflex of opening the
-  site, not the article you're halfway through.
+- **Already-open tabs** — with *Every visit*, turning a guard on also redirects tabs
+  already sitting on that site. Address-bar-only leaves them alone: that visit wasn't the
+  reflex of typing the site. A pass quietly expiring never sweeps, so you never lose what
+  you were typing. "Sometimes" sites are never swept either.
 
 <table>
   <tr>
@@ -93,7 +96,7 @@ shows a **needs access** pill, the rule is inert until you press **Grant**.
 manifest.json          MV3 manifest — permissions, background worker, pages
 src/defaults.js        shipped site + destination lists and default behaviour
 src/storage.js         storage accessors and domain/URL helpers
-src/background.js      service worker: builds the declarativeNetRequest rules
+src/background.js      service worker: DNR rules, address-bar vs link
 pages/redirect.html    the interstitial you land on (+ .css / .js)
 pages/popup.html       toolbar popup: master switch, per-site toggles, pause
 pages/options.html     full settings: lists, behaviour, tally
@@ -103,11 +106,14 @@ screenshots/           the images in this README
 
 Redirects are done with **declarativeNetRequest** dynamic rules rather than by watching
 navigation from the service worker, so the guarded site never gets to load — there's no
-flash of the timeline before the bounce.
+flash of the timeline before the bounce. **webNavigation** then says whether you typed the
+address or clicked a link, so address-bar-only can let a clicked link through without
+drawing the card.
 
 Settings live in `chrome.storage.sync` (they follow your profile). Passes, the pause timer,
 the last time you reached for each site and the tally live in `chrome.storage.local`.
 
-"Sometimes" sites are the one case where the page does load: the rule sends every visit to
-the interstitial, which asks the worker for a verdict before it draws anything. A won roll
-never becomes visible — the card is held back until the decision is in.
+A "sometimes" site, and a clicked link when only the address bar is caught, both land on
+the interstitial first: it asks the worker for a verdict before it draws anything. A won
+roll or a link that should go through never becomes visible — the card is held back until
+the decision is in.
