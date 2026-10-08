@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "bump-extension-version": {
+      "source": "podrivo/backdrop",
+      "sourceType": "github",
+      "skillPath": ".cursor/skills/bump-extension-version/SKILL.md",
+      "computedHash": "1443e0ed5c3c3de7cbb979be0b18b9a634fa59389ed63b29e16fddd766fabbd5"
+    },
+    "ponytail": {
+      "source": "podrivo/backdrop",
+      "sourceType": "github",
+      "skillPath": ".cursor/skills/ponytail/SKILL.md",
+      "computedHash": "210fa0831f649ce9f8a305f7b7c8cf2a0dd09ac4dd53067109941b96e7811d4e"
+    }
+  }
+}
